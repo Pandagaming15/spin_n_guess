@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Spin & Guess</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    min-height:100vh;
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items:center;
+
+    padding:20px 10px;
+
+    font-family:'Trebuchet MS',sans-serif;
+
+    background:
+        linear-gradient(135deg,#111827,#0f172a,#020617);
+
+    color:white;
+}
+
+/* =========================
+   TITLE
+========================= */
+
+h1{
+    margin-bottom:20px;
+
+    font-size:42px;
+    font-weight:900;
+    letter-spacing:2px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #ffb347,
+            #ffcc33,
+            #00e5ff
+        );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+/* =========================
+   CONTAINER
+========================= */
+.container{
+    position:relative;
+
+    width:320px;
+    height:320px;
+
+    padding:10px;
+
+    border-radius:26px;
+
+    background:#1e293b;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    box-shadow:0 10px 20px rgba(0,0,0,.3);
+}
+
+/* =========================
+   POINTER
+========================= */
+
+.pointer{
+    position:absolute;
+
+    top:-2px;
+    left:50%;
+
+    transform:
+        translateX(-50%)
+        rotate(180deg);
+
+    width:0;
+    height:0;
+
+    border-left:18px solid transparent;
+    border-right:18px solid transparent;
+    border-bottom:36px solid #ff9500;
+
+    z-index:10;
+
+    filter:
+        drop-shadow(0 0 8px #ff9500);
+}
+
+/* =========================
+   WHEEL
+========================= */
+
+canvas{
+    width:100%;
+    height:100%;
+
+    border-radius:50%;
+
+    background:#0f172a;
+
+    border:4px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 0 15px rgba(255,140,0,.15);
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+button{
+    border:none;
+    cursor:pointer;
+
+    color:white;
+    font-weight:800;
+
+    transition:.2s;
+}
+
+#spinBtn{
+    margin-top:25px;
+
+    padding:15px 40px;
+
+    border-radius:16px;
+
+    font-size:19px;
+    letter-spacing:1px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff7b00,
+            #ffb347,
+            #ff5e00
+        );
+
+    box-shadow:
+        0 0 20px rgba(255,140,0,.35);
+}
+
+#spinBtn:hover{
+    transform:
+        translateY(-3px)
+        scale(1.03);
+}
+
+#spinBtn:active{
+    transform:scale(.96);
+}
+
+/* =========================
+   OVERLAY
+========================= */
+
+.overlay{
+    position:fixed;
+    inset:0;
+
+    background:rgba(0,0,0,.65);
+
+    display:none;
+    justify-content:center;
+    align-items:center;
+
+    z-index:999;
+
+    padding:20px;
+}
+
+/* =========================
+   POPUP
+========================= */
+
+.popup{
+    width:340px;
+
+    min-height:430px;
+
+    padding:24px;
+
+    border-radius:24px;
+
+    background:#1e293b;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.45);
+
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+
+    text-align:center;
+
+    gap:14px;
+}
+
+.popup h2{
+    font-size:30px;
+
+    color:#ffb347;
+}
+
+.popup p{
+    font-size:21px;
+    line-height:1.5;
+
+    color:#e2e8f0;
+}
+
+/* =========================
+   TIMER
+========================= */
+
+#timerBox{
+    width:100px;
+
+    margin:0 auto;
+
+    padding:12px;
+
+    border-radius:16px;
+
+    font-size:30px;
+    font-weight:900;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff7b00,
+            #ffb347
+        );
+
+    color:white;
+
+    box-shadow:
+        0 0 18px rgba(255,140,0,.35);
+}
+
+/* =========================
+   ANSWER BOX
+========================= */
+
+#answerBox{
+    display:none;
+
+    min-height:110px;
+
+    padding:18px;
+
+    border-radius:18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0,255,170,.12),
+            rgba(0,180,255,.12)
+        );
+
+    border:1px solid rgba(255,255,255,.08);
+}
+
+#answerBox h3{
+    margin-bottom:10px;
+
+    color:#00ffaa;
+
+    font-size:20px;
+}
+
+#correctAnswer{
+    font-size:24px;
+    font-weight:bold;
+
+    color:white;
+}
+
+/* =========================
+   POPUP BUTTONS
+========================= */
+
+.popup button{
+    width:100%;
+
+    padding:14px;
+
+    border-radius:16px;
+
+    font-size:16px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff7b00,
+            #ffb347
+        );
+}
+
+.popup button:hover{
+    transform:scale(1.02);
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:500px){
+
+    .container{
+        width:320px;
+        height:320px;
+    }
+
+    h1{
+        font-size:34px;
+    }
+
+    .popup{
+        width:95%;
+    }
+}
+
+/* =========================
+   INFO PANEL
+========================= */
+.infoPanel{
+    margin-top:16px;
+
+    width:320px;
+
+    padding:14px;
+
+    border-radius:18px;
+
+    background:#1e293b;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    box-shadow:0 8px 18px rgba(0,0,0,.25);
+
+    font-size:13px;
+}
+
+.infoPanel h2{
+    font-size:18px;
+    margin-bottom:10px;
+}
+
+.infoPanel li{
+    margin-bottom:6px;
+    font-size:12px;
+    line-height:1.3;
+}
+
+/* =========================
+   CREDIT
+========================= */
+
+.credit{
+    margin-top:18px;
+
+    text-align:center;
+
+    font-size:16px;
+
+    color:#cbd5e1;
+}
+
+.credit span{
+    color:#00e5ff;
+
+    font-weight:bold;
+
+    text-shadow:
+        0 0 10px rgba(0,229,255,.45);
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:500px){
+
+    .infoPanel{
+        width:95%;
+    }
+}
+
+.mainLayout{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+}
+
+/* DESKTOP MODE */
+@media(min-width:900px){
+
+    .mainLayout{
+        flex-direction:row;
+        justify-content:center;
+        align-items:flex-start;
+        gap:40px;
+    }
+
+    .gameArea{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+    }
+
+    .container{
+        width:420px;
+        height:420px;
+    }
+
+    canvas{
+        width:420px;
+        height:420px;
+    }
+
+    .infoPanel{
+        width:380px;
+    }
+
+    h1{
+        font-size:48px;
+    }
+}
+
+.gameArea{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+/* keeps spacing consistent */
+#spinBtn{
+    margin-top:25px;
+    align-self:center;
+}
+
+#revealBtn{
+    width:100%;
+
+    padding:14px;
+
+    border-radius:16px;
+
+    font-size:16px;
+    font-weight:bold;
+
+    background:linear-gradient(135deg,#00d4ff,#00ffaa);
+
+    color:#0f172a;
+
+    margin-top:10px;
+
+    display:none; /* hidden by default */
+
+    box-shadow:0 0 15px rgba(0,255,200,.3);
+}
+
+#revealBtn:hover{
+    transform:scale(1.03);
+}
+
+</style>
+</head>
+
+<body>
+<div class="mainLayout">
+
+    <div class="gameArea">
+
+        <h1>Spin & Guess</h1>
+
+        <div class="container">
+
+            <div class="pointer"></div>
+
+            <canvas id="wheel"
+                width="320"
+                height="320">
+            </canvas>
+
+        </div>
+
+        <button id="spinBtn" onclick="spin()">
+            SPIN
+        </button>
+
+    </div>
+
+    <div class="infoPanel">
+
+        <center><h2>🎮 Game Mechanics</h2></center>
+
+        <ul>
+            <li>🎡 Spin the wheel to select a challenge category.</li>
+
+            <li>⏳ Players have 10 seconds to answer before the correct answer appears.</li>
+
+            <li>🧠 Each category contains 5 food and fish processing related items.</li>
+
+            <li>🗑️ After answering correctly, remove the item so it will not appear again.</li>
+
+            <li>⭐ Teachers may give coupons, or rewards for correct answers.</li>
+
+            <li>🤝 This game may be played individually .</li>
+        </ul>
+
+        <div class="credit">
+            Made by <span>Kyle Airon Laroza</span>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- POPUP -->
+
+<div id="popupOverlay" class="overlay">
+
+    <div class="popup">
+
+        <h2 id="popupTitle"></h2>
+
+        <div id="timerBox">
+            ⏳ 10
+        </div>
+      
+        <p id="popupText"></p>
+
+        <div id="answerBox">
+
+            <h3>
+                ✅ Correct Answer
+            </h3>
+
+            <p id="correctAnswer"></p>
+
+        </div>
+        
+        <button id="revealBtn" onclick="revealAnswer()">
+    👁️ Reveal Answer
+</button>
+
+        <button onclick="removeItem()">
+            🗑️ Remove Item
+        </button>
+
+        <button onclick="closePopup()">
+            ❌ Close
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+const canvas =
+    document.getElementById("wheel");
+
+const ctx =
+    canvas.getContext("2d");
+
+const cx = 160;
+const cy = 160;
+const radius = 160;
+
+let rotation = 0;
+let isSpinning = false;
+
+let countdownInterval;
+let currentCountdown = 10;
+
+/* =========================
+   ORIGINAL DATA
+========================= */
+
+const originalCategories = [
+
+{
+    name:"Guess the Tool",
+    color:"#ff4d4d",
+
+    data:[
+
+        {
+            id:1,
+            question:
+            "This tool is used to remove the scales of fish.",
+
+            answer:"Fish scaler"
+        },
+
+        {
+            id:2,
+            question:
+            "This tool is used to cut fish or meat into pieces.",
+
+            answer:"Knife"
+        },
+
+        {
+            id:3,
+            question:
+            "This equipment is used to store fish at low temperature to keep it fresh.",
+
+            answer:"Freezer / Refrigerator"
+        },
+
+        {
+            id:4,
+            question:
+            "This tool is used to remove the internal organs of fish.",
+
+            answer:"Knife or gutting tool"
+        },
+
+        {
+            id:5,
+            question:
+            "This equipment is used to cook food using steam.",
+
+            answer:"Steamer"
+        }
+
+    ]
+},
+
+{
+    name:"Guess the Use",
+    color:"#4dd2ff",
+
+    data:[
+
+        {
+            id:6,
+            question:"Weighing Scale",
+
+            answer:
+            "Used to measure the weight of ingredients."
+        },
+
+        {
+            id:7,
+            question:"Measuring Cup",
+
+            answer:
+            "Used to measure liquid ingredients."
+        },
+
+        {
+            id:8,
+            question:"Strainer",
+
+            answer:
+            "Used to separate liquid from solid food."
+        },
+
+        {
+            id:9,
+            question:"Cutting Board",
+
+            answer:
+            "Used as a surface when cutting fish or other ingredients."
+        },
+
+        {
+            id:10,
+            question:"Thermometer",
+
+            answer:
+            "Used to measure the temperature of food."
+        }
+
+    ]
+},
+
+{
+    name:"Guess the Category",
+    color:"#4dff88",
+
+    data:[
+
+        {
+            id:11,
+            question:"Knife",
+            answer:"Tool"
+        },
+
+        {
+            id:12,
+            question:"Freezer",
+            answer:"Equipment"
+        },
+
+        {
+            id:13,
+            question:"Ladle",
+            answer:"Utensils"
+        },
+
+        {
+            id:14,
+            question:"Thermometer",
+            answer:"Instrument"
+        },
+
+        {
+            id:15,
+            question:"Weighing Scale",
+            answer:"Instrument"
+        }
+
+    ]
+}
+
+];
+
+/* =========================
+   ACTIVE DATA
+========================= */
+
+let categories =
+    JSON.parse(
+        JSON.stringify(originalCategories)
+    );
+
+let segmentAngle =
+    360 / categories.length;
+
+/* =========================
+   DRAW WHEEL
+========================= */
+
+function drawWheel(){
+
+    ctx.clearRect(0,0,320,320);
+
+    segmentAngle =
+        360 / categories.length;
+
+    for(let i=0;i<categories.length;i++){
+
+        const start =
+            rotation + i * segmentAngle;
+
+        const end =
+            start + segmentAngle;
+
+        ctx.beginPath();
+
+        ctx.fillStyle =
+            categories[i].color;
+
+        ctx.moveTo(cx,cy);
+
+        ctx.arc(
+            cx,
+            cy,
+            radius,
+            deg(start),
+            deg(end)
+        );
+
+        ctx.fill();
+
+        /* text */
+
+        ctx.save();
+
+        ctx.translate(cx,cy);
+
+        ctx.rotate(
+            deg(start + segmentAngle/2)
+        );
+
+        ctx.fillStyle = "white";
+
+        ctx.font =
+            "bold 15px Arial";
+
+        ctx.textAlign = "right";
+
+        ctx.fillText(
+            categories[i].name,
+            radius - 14,
+            10
+        );
+
+        ctx.restore();
+    }
+
+    /* center */
+
+    ctx.beginPath();
+
+    ctx.fillStyle = "#111827";
+
+    ctx.arc(
+        cx,
+        cy,
+        38,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle = "#00ffcc";
+
+    ctx.font = "bold 18px Arial";
+
+    ctx.textAlign = "center";
+
+    ctx.fillText(
+        "SPIN",
+        cx,
+        cy + 6
+    );
+}
+
+function deg(d){
+    return d * Math.PI / 180;
+}
+
+/* =========================
+   SPIN
+========================= */
+
+function spin(){
+
+    if(isSpinning) return;
+
+    if(categories.length === 0){
+        resetGame();
+    }
+
+    isSpinning = true;
+
+    const spins =
+        (Math.floor(Math.random()*5)+5)
+        * 360;
+
+    const offset =
+        Math.random() * 360;
+
+    const target =
+        spins + offset;
+
+    const duration = 3500;
+
+    const startRotation =
+        rotation;
+
+    let start = null;
+
+    function animate(t){
+
+        if(!start) start = t;
+
+        const elapsed =
+            t - start;
+
+        const p =
+            Math.min(
+                elapsed / duration,
+                1
+            );
+
+        const ease =
+            1 - Math.pow(1-p,4);
+
+        rotation =
+            startRotation + target * ease;
+
+        drawWheel();
+
+        if(p < 1){
+
+            requestAnimationFrame(animate);
+
+        }else{
+
+            fixRotation();
+
+            showResult();
+
+            isSpinning = false;
+        }
+    }
+
+    requestAnimationFrame(animate);
+}
+
+/* =========================
+   FIX ROTATION
+========================= */
+
+function fixRotation(){
+
+    rotation %= 360;
+
+    if(rotation < 0){
+        rotation += 360;
+    }
+}
+
+/* =========================
+   SHOW RESULT
+========================= */
+
+function showResult(){
+
+    let r = rotation % 360;
+
+    if(r < 0){
+        r += 360;
+    }
+
+    const pointerAngle = 270;
+
+    let hitAngle =
+        (pointerAngle - r + 360)
+        % 360;
+
+    let index =
+        Math.floor(
+            hitAngle / segmentAngle
+        );
+
+    if(index >= categories.length){
+
+        index =
+            categories.length - 1;
+    }
+
+    const category =
+        categories[index];
+
+    const rand =
+        Math.floor(
+            Math.random() *
+            category.data.length
+        );
+
+    const item =
+        category.data[rand];
+
+    document.getElementById("popupTitle")
+        .innerText =
+        category.name;
+
+    document.getElementById("popupText")
+        .innerText =
+        item.question;
+
+    document.getElementById("correctAnswer")
+        .innerText =
+        item.answer;
+
+    document.getElementById("answerBox")
+        .style.display =
+        "none";
+    document.getElementById("revealBtn").style.display = "none";
+
+    document.getElementById("popupOverlay")
+        .style.display =
+        "flex";
+
+    startTimer();
+
+    window.lastItem = {
+
+        categoryIndex:index,
+
+        itemId:item.id
+    };
+}
+
+/* =========================
+   TIMER
+========================= */
+
+function startTimer(){
+
+    clearInterval(
+        countdownInterval
+    );
+
+    currentCountdown = 10; //time seconds
+
+    const timer =
+        document.getElementById(
+            "timerBox"
+        );
+
+    timer.innerText =
+        `⏳ ${currentCountdown}`;
+
+    countdownInterval =
+        setInterval(() => {
+
+        currentCountdown--;
+
+        if(currentCountdown > 0){
+
+            timer.innerText =
+                `⏳ ${currentCountdown}`;
+
+        }else{
+
+            if(currentCountdown <= 0){
+
+    clearInterval(countdownInterval);
+
+    timer.innerText = "⏳ Time's Up";
+
+    // show reveal button instead of auto answer
+    document.getElementById("revealBtn").style.display = "block";
+}
+        }
+
+    },1000);
+}
+
+/* =========================
+   REMOVE ITEM
+========================= */
+
+function removeItem(){
+
+    const {
+        categoryIndex,
+        itemId
+    } = window.lastItem;
+
+    if(!categories[categoryIndex])
+        return;
+
+    categories[categoryIndex].data =
+        categories[categoryIndex]
+        .data.filter(
+            item => item.id !== itemId
+        );
+
+    /* remove segment if empty */
+
+    if(
+        categories[categoryIndex]
+        .data.length === 0
+    ){
+
+        categories.splice(
+            categoryIndex,
+            1
+        );
+    }
+
+    /* restart if empty */
+
+    if(categories.length === 0){
+
+        setTimeout(() => {
+
+            alert(
+                "🎉 All categories completed! Restarting game."
+            );
+
+            resetGame();
+
+        },200);
+    }
+
+    drawWheel();
+
+    closePopup();
+}
+
+function revealAnswer(){
+
+    document.getElementById("answerBox")
+        .style.display = "block";
+
+    document.getElementById("revealBtn")
+        .style.display = "none";
+}
+
+/* =========================
+   RESET GAME
+========================= */
+
+function resetGame(){
+
+    categories =
+        JSON.parse(
+            JSON.stringify(
+                originalCategories
+            )
+        );
+
+    rotation = 0;
+
+    drawWheel();
+}
+
+/* =========================
+   CLOSE POPUP
+========================= */
+
+function closePopup(){
+
+    clearInterval(
+        countdownInterval
+    );
+
+    document.getElementById(
+        "popupOverlay"
+    ).style.display = "none";
+}
+
+/* =========================
+   START
+========================= */
+
+drawWheel();
+
+</script>
+
+</body>
+</html>
